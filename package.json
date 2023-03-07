@@ -1,0 +1,23 @@
+{
+  "name": "subplebbit-uptime-monitor",
+  "version": "1.0.0",
+  "scripts": {
+    "monitor": "node ./monitor --subplebbits subplebbits.txt --config config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/plebbit/subplebbit-uptime-monitor.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/plebbit/subplebbit-uptime-monitor/issues"
+  },
+  "homepage": "https://github.com/plebbit/subplebbit-uptime-monitor#readme",
+  "dependencies": {
+    "ethers": "^6.1.0",
+    "fs-extra": "^11.1.0",
+    "node-fetch": "^2.6.7",
+    "yargs": "^17.7.1"
+  }
+}
