@@ -1,4 +1,8 @@
 module.exports = {
+  ipfs: {
+    // if gateway URL is defined, monitor won't start its own IPFS daemon
+    gatewayUrl: ''
+  },
   monitor: {
     interval: 1000 * 60 * 10 // 10 minutes
   },
