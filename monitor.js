@@ -1,3 +1,5 @@
+require('util').inspect.defaultOptions.depth = process.env.DEBUG_DEPTH
+require('dotenv').config()
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
 const argv = yargs(hideBin(process.argv)).argv
@@ -30,11 +32,22 @@ catch (e) {
   throw e
 }
 
-console.log('config', config)
+// don't log alert options because they might contain tokens
+const configWithoutAlertOptions = {...config, alerts: config.alerts.map(alert => ({...alert, options: '...'}))}
+console.log('config', configWithoutAlertOptions)
 console.log('monitoring subplebbits', subplebbits)
 
 if (!config?.alerts?.length) {
   throw Error('config file has no alerts array')
+}
+for (const alert of config.alerts) {
+  try {
+    require(path.resolve(alert.path))
+  }
+  catch (e) {
+    e.message = `failed reading config.alerts file path '${alert.path}': ${e.message}`
+    throw e
+  }
 }
 if (!config?.monitor?.interval) {
   throw Error('config file has no monitor.interval number')
