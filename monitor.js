@@ -37,11 +37,14 @@ if (!config?.alerts?.length) {
   throw Error('config file has no alerts array')
 }
 if (!config?.monitor?.interval) {
-  throw Error('config file has monitor.interval number')
+  throw Error('config file has no monitor.interval number')
 }
 
 ;(async () => {
-  await startIpfs()
+  if (!config?.ipfs?.gatewayUrl) {
+    console.log('config file has no ipfs.gatewayUrl, starting an ipfs daemon...')
+    await startIpfs()
+  }
 
   for (subplebbit of subplebbits) {
     monitor(subplebbit, config).catch(console.log)
