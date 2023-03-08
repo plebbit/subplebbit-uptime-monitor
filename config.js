@@ -10,7 +10,8 @@ module.exports = {
     {
       path: './lib/alerts/telegram',
       options: {
-        token: 'ABC...'
+        token: process.env.TELEGRAM_TOKEN,
+        chatId: process.env.TELEGRAM_CHAT_ID
       }
     }
   ]
