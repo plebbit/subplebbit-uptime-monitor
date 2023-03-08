@@ -62,5 +62,4 @@ if (!config?.monitor?.interval) {
   for (subplebbit of subplebbits) {
     monitor(subplebbit, config).catch(console.log)
   }
-
 })()
