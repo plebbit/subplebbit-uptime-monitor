@@ -1,4 +1,5 @@
 .ipfs
+.deploy-env
 
 # Logs
 logs
