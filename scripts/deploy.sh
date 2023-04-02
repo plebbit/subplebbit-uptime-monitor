@@ -4,10 +4,11 @@
 
 # go to current folder
 cd "$(dirname "$0")"
+cd ..
 
 # add env vars
 if [ -f .deploy-env ]; then
-  export $(echo $(cat ../deploy-env | sed 's/#.*//g'| xargs) | envsubst)
+  export $(echo $(cat .deploy-env | sed 's/#.*//g'| xargs) | envsubst)
 fi
 
 # check creds
@@ -30,6 +31,7 @@ echo "$SCRIPT" | sshpass -p "$DEPLOY_PASSWORD" ssh "$DEPLOY_USER"@"$DEPLOY_HOST"
 FILE_NAMES=(
   ".env"
   "subplebbits.txt"
+  "config.js"
 )
 
 # copy files
@@ -37,9 +39,9 @@ for FILE_NAME in ${FILE_NAMES[@]}; do
   sshpass -p "$DEPLOY_PASSWORD" scp $FILE_NAME "$DEPLOY_USER"@"$DEPLOY_HOST":/home/subplebbit-uptime-monitor
 done
 
-# SCRIPT="
-# cd /home/subplebbit-uptime-monitor
-# scripts/start-docker.sh
-# "
+SCRIPT="
+cd /home/subplebbit-uptime-monitor
+scripts/start-docker.sh
+"
 
-# echo "$SCRIPT" | sshpass -p "$DEPLOY_PASSWORD" ssh "$DEPLOY_USER"@"$DEPLOY_HOST"
+echo "$SCRIPT" | sshpass -p "$DEPLOY_PASSWORD" ssh "$DEPLOY_USER"@"$DEPLOY_HOST"
