@@ -1,13 +1,14 @@
 module.exports = {
-  chainProviders: {
-    eth: {
-      // if ETH RPC URL, won't use default ethers provider
-      url: process.env.ETH_PROVIDER_URL
-    }
-  },
-  ipfs: {
+  plebbitOptions: {
     // if gateway URL is defined, monitor won't start its own IPFS daemon
-    gatewayUrl: 'https://ipfs.io'
+    ipfsGatewayUrls: ['https://ipfs.io'],
+    pubsubHttpClientsOptions: ['https://pubsubprovider.xyz/api/v0'],
+    chainProviders: {
+      eth: {
+        // if ETH RPC URL, won't use default ethers provider
+        urls: [process.env.ETH_PROVIDER_URL]
+      }
+    },
   },
   monitor: {
     interval: 1000 * 60 * 10 // 10 minutes

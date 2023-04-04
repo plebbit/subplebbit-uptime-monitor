@@ -54,8 +54,16 @@ if (!config?.monitor?.interval) {
 }
 
 ;(async () => {
-  if (!config?.ipfs?.gatewayUrl) {
-    console.log('config file has no ipfs.gatewayUrl, starting an ipfs daemon...')
+  let shouldStartIpfs = false
+  if (!config?.plebbitOptions?.ipfsGatewayUrls?.[0]) {
+    console.log('config file has no plebbitOptions?.ipfsGatewayUrls, starting an ipfs daemon...')
+    shouldStartIpfs = true
+  }
+  if (!config?.plebbitOptions?.pubsubHttpClientsOptions?.[0]) {
+    console.log('config file has no plebbitOptions?.pubsubHttpClientsOptions, starting an ipfs daemon...')
+    shouldStartIpfs = true
+  }
+  if (shouldStartIpfs) {
     await startIpfs()
   }
 
