@@ -6,3 +6,4 @@ videos-livestreams-podcasts.eth
 health-nutrition-science.eth
 censorship-watch.eth
 reddit-screenshots.eth
+plebwhales.eth
