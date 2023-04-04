@@ -20,6 +20,7 @@ SCRIPT="
 cd /home
 git clone https://github.com/plebbit/subplebbit-uptime-monitor.git
 cd subplebbit-uptime-monitor
+git reset HEAD --hard
 git pull
 npm install
 "
