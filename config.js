@@ -5,7 +5,7 @@ module.exports = {
     pubsubHttpClientsOptions: ['https://pubsubprovider.xyz/api/v0'],
     chainProviders: {
       eth: {
-        // if ETH RPC URL, won't use default ethers provider
+        // if ETH RPC URL, won't use default ethers.js provider
         urls: [process.env.ETH_PROVIDER_URL]
       }
     },
