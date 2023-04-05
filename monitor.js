@@ -6,6 +6,7 @@ const argv = yargs(hideBin(process.argv)).argv
 const fs = require('fs-extra')
 const path = require('path')
 const monitor = require('./lib/monitor')
+const stats = require('./lib/stats')
 const startIpfs = require('./lib/start-ipfs')
 
 if (!argv.subplebbits) {
@@ -70,4 +71,5 @@ if (!config?.monitor?.interval) {
   for (subplebbit of subplebbits) {
     monitor(subplebbit, config).catch(console.log)
   }
+  await stats.start(config)
 })()
