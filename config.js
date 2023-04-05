@@ -20,6 +20,13 @@ module.exports = {
         token: process.env.TELEGRAM_TOKEN,
         chatId: process.env.TELEGRAM_CHAT_ID
       }
+    },
+    {
+      path: './lib/alerts/telegram',
+      options: {
+        token: process.env.TELEGRAM_TOKEN,
+        chatId: process.env.TELEGRAM_CHAT_ID_2
+      }
     }
   ]
 }
