@@ -27,6 +27,15 @@ module.exports = {
         token: process.env.TELEGRAM_TOKEN,
         chatId: process.env.TELEGRAM_CHAT_ID_2
       }
+    },
+  ],
+  stats: [
+    {
+      path: './lib/stats/telegram',
+      options: {
+        token: process.env.TELEGRAM_TOKEN,
+        chatId: process.env.TELEGRAM_CHANNEL_ID
+      }
     }
   ]
 }
