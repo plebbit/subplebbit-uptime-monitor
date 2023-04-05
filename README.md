@@ -14,9 +14,16 @@ A javascript file like:
 
 ```
 module.exports = {
-  ipfs: {
+  plebbitOptions: {
     // if gateway URL is defined, monitor won't start its own IPFS daemon
-    gatewayUrl: ''
+    ipfsGatewayUrls: ['https://ipfs.io'],
+    pubsubHttpClientsOptions: ['https://pubsubprovider.xyz/api/v0'],
+    chainProviders: {
+      eth: {
+        // if ETH RPC URL, won't use default ethers.js provider
+        urls: [process.env.ETH_PROVIDER_URL]
+      }
+    },
   },
   monitor: {
     interval: 1000 * 60 * 10 // 10 minutes
