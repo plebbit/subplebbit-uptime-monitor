@@ -23,6 +23,9 @@ cd subplebbit-uptime-monitor
 git reset HEAD --hard
 git pull
 npm install
+
+# download subs from github
+curl https://raw.githubusercontent.com/plebbit/temporary-default-subplebbits/master/subplebbits.json | grep -Po '(?<=\"address\": \")[^\"]+' > subplebbits.txt
 "
 
 # execute script over ssh
@@ -30,8 +33,8 @@ echo "$SCRIPT" | sshpass -p "$DEPLOY_PASSWORD" ssh "$DEPLOY_USER"@"$DEPLOY_HOST"
 
 # copy files
 FILE_NAMES=(
-  ".env"
-  "subplebbits.txt"
+  # ".env"
+  # "subplebbits.txt"
   "config.js"
 )
 
