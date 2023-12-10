@@ -16,7 +16,7 @@ if [ -z "${DEPLOY_HOST+xxx}" ]; then echo "DEPLOY_HOST not set" && exit; fi
 if [ -z "${DEPLOY_USER+xxx}" ]; then echo "DEPLOY_USER not set" && exit; fi
 if [ -z "${DEPLOY_PASSWORD+xxx}" ]; then echo "DEPLOY_PASSWORD not set" && exit; fi
 
-SUBPLEBBITS=$(node -e "fetch('https://raw.githubusercontent.com/plebbit/temporary-default-subplebbits/master/multisub.json ').then(res => res.json()).then(multisub => console.log(multisub.subplebbits.map(subplebbit => subplebbit.address).join('\n')))")
+SUBPLEBBITS=$(node -e "fetch('https://raw.githubusercontent.com/plebbit/temporary-default-subplebbits/master/multisub.json').then(res => res.json()).then(multisub => console.log(multisub.subplebbits.map(subplebbit => subplebbit.address).join('\n')))")
 
 SCRIPT="
 cd /home
