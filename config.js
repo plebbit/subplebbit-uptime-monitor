@@ -2,6 +2,7 @@ export default {
   // multisub urls to monitor (can support files and ipns names in the future)
   multisubs: [
     'https://raw.githubusercontent.com/plebbit/temporary-default-subplebbits/master/multisub.json',
+    './temporary-default-subplebbits-multisub.json'
   ],
   plebbitOptions: {
     // if gateway URL is defined, monitor won't start its own IPFS daemon

@@ -1,5 +1,5 @@
 import util from 'util'
-util.inspect.defaultOptions.depth = process.env.DEBUG_DEPTH
+// util.inspect.defaultOptions.depth = process.env.DEBUG_DEPTH
 import dotenv from 'dotenv'
 dotenv.config()
 import yargs from 'yargs/yargs'
@@ -10,6 +10,7 @@ import {fetchMultisubUrl} from './lib/utils.js'
 import config from './config.js'
 import monitorState from './lib/monitor-state.js'
 import {monitorSubplebbitsIpns} from './lib/subplebbit-ipns.js'
+import {monitorSubplebbitsPubsub} from './lib/subplebbit-pubsub.js'
 
 if (!config.multisubs) {
   console.log(`missing config.js 'multisubs'`)
@@ -18,6 +19,7 @@ if (!config.multisubs) {
 
 const multisubsIntervalMs = 1000 * 60 * 60
 const subplebbitsIpnsIntervalMs = 1000 * 60 * 10
+const subplebbitsPubsubIntervalMs = 1000 //* 60 * 10
 
 // fetch subplebbits to monitor every hour
 const multisubs = []
@@ -69,6 +71,10 @@ while (!monitorState.subplebbitsMonitoring) {
 // console.log('monitoring', monitorState.subplebbitsMonitoring)
 setInterval(() => console.log(monitorState.subplebbits), 10000)
 
-// fetch subplebbits ipns every 10min
+// // fetch subplebbits ipns every 10min
 monitorSubplebbitsIpns().catch(e => console.log(e.message))
 setInterval(() => monitorSubplebbitsIpns().catch(e => console.log(e.message)), subplebbitsIpnsIntervalMs)
+
+// rejoin pubsub every 10min
+monitorSubplebbitsPubsub().catch(e => console.log(e.message))
+setInterval(() => monitorSubplebbitsPubsub().catch(e => console.log(e.message)), subplebbitsPubsubIntervalMs)
