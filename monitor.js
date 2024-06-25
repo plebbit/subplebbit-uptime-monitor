@@ -1,75 +1,74 @@
-require('util').inspect.defaultOptions.depth = process.env.DEBUG_DEPTH
-require('dotenv').config()
-const yargs = require('yargs/yargs')
-const { hideBin } = require('yargs/helpers')
+import util from 'util'
+util.inspect.defaultOptions.depth = process.env.DEBUG_DEPTH
+import dotenv from 'dotenv'
+dotenv.config()
+import yargs from 'yargs/yargs'
+import { hideBin } from 'yargs/helpers'
 const argv = yargs(hideBin(process.argv)).argv
-const fs = require('fs-extra')
-const path = require('path')
-const monitor = require('./lib/monitor')
-const stats = require('./lib/stats')
-const startIpfs = require('./lib/start-ipfs')
 
-if (!argv.subplebbits) {
-  console.log('missing argument --subplebbits')
-}
-let subplebbits
-try {
-  subplebbits = fs.readFileSync(argv.subplebbits, 'utf8').trim().split(/\r?\n|\r/).map(item => item.trim())
-}
-catch (e) {
-  e.message = `failed reading subplebbits file path '${argv.subplebbits}': ${e.message}`
-  throw e
+import {fetchMultisubUrl} from './lib/utils.js'
+import config from './config.js'
+import monitorState from './lib/monitor-state.js'
+import {monitorSubplebbitsIpns} from './lib/subplebbit-ipns.js'
+
+if (!config.multisubs) {
+  console.log(`missing config.js 'multisubs'`)
+  process.exit()
 }
 
-if (!argv.config) {
-  console.log('missing argument --config')
-}
-let config
-try {
-  config = require(path.resolve(argv.config))
-}
-catch (e) {
-  e.message = `failed reading config file path '${argv.config}': ${e.message}`
-  throw e
-}
+const multisubsIntervalMs = 1000 * 60 * 60
+const subplebbitsIpnsIntervalMs = 1000 * 60 * 10
 
-// don't log alert options because they might contain tokens
-const configWithoutAlertOptions = {...config, alerts: config.alerts.map(alert => ({...alert, options: '...'}))}
-console.log('config', configWithoutAlertOptions)
-console.log('monitoring subplebbits', subplebbits)
-
-if (!config?.alerts?.length) {
-  throw Error('config file has no alerts array')
-}
-for (const alert of config.alerts) {
-  try {
-    require(path.resolve(alert.path))
-  }
-  catch (e) {
-    e.message = `failed reading config.alerts file path '${alert.path}': ${e.message}`
-    throw e
-  }
-}
-if (!config?.monitor?.interval) {
-  throw Error('config file has no monitor.interval number')
-}
-
-;(async () => {
-  let shouldStartIpfs = false
-  if (!config?.plebbitOptions?.ipfsGatewayUrls?.[0]) {
-    console.log('config file has no plebbitOptions?.ipfsGatewayUrls, starting an ipfs daemon...')
-    shouldStartIpfs = true
-  }
-  if (!config?.plebbitOptions?.pubsubHttpClientsOptions?.[0]) {
-    console.log('config file has no plebbitOptions?.pubsubHttpClientsOptions, starting an ipfs daemon...')
-    shouldStartIpfs = true
-  }
-  if (shouldStartIpfs) {
-    await startIpfs()
+// fetch subplebbits to monitor every hour
+const multisubs = []
+const getSubplebbitsMonitoring = async () => {
+  const promises = await Promise.allSettled(config.multisubs.map(multisubUrl => fetchMultisubUrl(multisubUrl)))
+  for (const [i, {status, value: multisub, reason}] of promises.entries()) {
+    if (status === 'fulfilled') {
+      multisubs[i] = multisub
+    }
+    else {
+      console.log(`failed getting subplebbits to monitor (${i + 1} of ${promises.length}): ${reason}`)
+    }
   }
 
-  for (subplebbit of subplebbits) {
-    monitor(subplebbit, config).catch(console.log)
+  const subplebbitsMap = new Map()
+  for (const multisub of multisubs) {
+    if (!multisub) {
+      continue
+    }
+    for (const subplebbit of multisub.subplebbits) {
+      if (!subplebbitsMap.has(subplebbit.address)) {
+        subplebbitsMap.set(subplebbit.address, subplebbit)
+      }
+    }
   }
-  await stats.start(config)
-})()
+
+  // set initial state
+  if (subplebbitsMap.size > 0) {
+    monitorState.subplebbitsMonitoring = [...subplebbitsMap.values()]
+    for (const subplebbit of monitorState.subplebbitsMonitoring) {
+      monitorState.subplebbits[subplebbit.address] = {
+        ...monitorState.subplebbits[subplebbit.address],
+        address: subplebbit.address,
+      }
+    }
+  }
+}
+setInterval(() => getSubplebbitsMonitoring().catch(e => console.log(e.message)), multisubsIntervalMs)
+
+// fetch subs to monitor at least once before starting
+while (!monitorState.subplebbitsMonitoring) {
+  await getSubplebbitsMonitoring()
+  if (!monitorState.subplebbitsMonitoring) {
+    console.log('retrying getting subplebbits to monitor in 10 seconds')
+    await new Promise(r => setTimeout(r, 10000))
+  }
+}
+
+// console.log('monitoring', monitorState.subplebbitsMonitoring)
+setInterval(() => console.log(monitorState.subplebbits), 10000)
+
+// fetch subplebbits ipns every 10min
+monitorSubplebbitsIpns().catch(e => console.log(e.message))
+setInterval(() => monitorSubplebbitsIpns().catch(e => console.log(e.message)), subplebbitsIpnsIntervalMs)
