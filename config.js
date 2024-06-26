@@ -4,6 +4,10 @@ export default {
     'https://raw.githubusercontent.com/plebbit/temporary-default-subplebbits/master/multisub.json',
     './temporary-default-subplebbits-multisub.json'
   ],
+  delegatedRoutingUrls: [
+    // 'https://example.com',
+    'https://delegated-ipfs.dev',
+  ],
   plebbitOptions: {
     // if gateway URL is defined, monitor won't start its own IPFS daemon
     ipfsGatewayUrls: ['http://89.36.231.207'],

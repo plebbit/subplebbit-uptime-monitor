@@ -19,7 +19,7 @@ if (!config.multisubs) {
 
 const multisubsIntervalMs = 1000 * 60 * 60
 const subplebbitsIpnsIntervalMs = 1000 * 60 * 10
-const subplebbitsPubsubIntervalMs = 1000 //* 60 * 10
+const subplebbitsPubsubIntervalMs = 1000 * 60 * 10
 
 // fetch subplebbits to monitor every hour
 const multisubs = []
@@ -71,10 +71,10 @@ while (!monitorState.subplebbitsMonitoring) {
 // console.log('monitoring', monitorState.subplebbitsMonitoring)
 setInterval(() => console.log(monitorState.subplebbits), 10000)
 
-// // fetch subplebbits ipns every 10min
+// fetch subplebbits ipns every 10min
 monitorSubplebbitsIpns().catch(e => console.log(e.message))
 setInterval(() => monitorSubplebbitsIpns().catch(e => console.log(e.message)), subplebbitsIpnsIntervalMs)
 
 // rejoin pubsub every 10min
-monitorSubplebbitsPubsub().catch(e => console.log(e.message))
+setTimeout(() => monitorSubplebbitsPubsub().catch(e => console.log(e.message)), 1000 * 60) // wait for some pubsub topics to be fetched
 setInterval(() => monitorSubplebbitsPubsub().catch(e => console.log(e.message)), subplebbitsPubsubIntervalMs)

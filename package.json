@@ -21,6 +21,7 @@
     "dotenv": "16.0.3",
     "ethers": "6.1.0",
     "fs-extra": "11.1.0",
+    "https-proxy-agent": "^7.0.4",
     "ipfs-http-client": "56.0.3",
     "javascript-time-ago": "^2.5.10",
     "jsdom": "21.1.1",
