@@ -78,3 +78,21 @@ setInterval(() => monitorSubplebbitsIpns().catch(e => console.log(e.message)), s
 // rejoin pubsub every 10min
 setTimeout(() => monitorSubplebbitsPubsub().catch(e => console.log(e.message)), 1000 * 60) // wait for some pubsub topics to be fetched
 setInterval(() => monitorSubplebbitsPubsub().catch(e => console.log(e.message)), subplebbitsPubsubIntervalMs)
+
+// start stats endpoint
+import express from 'express'
+const app = express()
+app.get('/', function (req, res) {
+  const subplebbits = []
+  for (const subplebbitAddress in monitorState.subplebbits) {
+    subplebbits.push({
+      address: subplebbitAddress,
+      lastSubplebbitUpdateTimestamp: monitorState.subplebbits[subplebbitAddress].lastSubplebbitUpdateTimestamp,
+      pubsubDhtPeers: monitorState.subplebbits[subplebbitAddress].pubsubDhtPeers?.length
+    })
+  }
+  const jsonResponse = JSON.stringify({subplebbits})
+  res.setHeader('Content-Type', 'application/json')
+  res.send(jsonResponse)
+})
+app.listen(3000)
