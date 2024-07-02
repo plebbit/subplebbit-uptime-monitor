@@ -1,3 +1,4 @@
+import './lib/use-node-fetch.js'
 import util from 'util'
 // util.inspect.defaultOptions.depth = process.env.DEBUG_DEPTH
 import dotenv from 'dotenv'
@@ -19,7 +20,7 @@ if (!config.multisubs) {
 
 const multisubsIntervalMs = 1000 * 60 * 60
 const subplebbitsIpnsIntervalMs = 1000 * 60 * 10
-const subplebbitsPubsubIntervalMs = 1000 * 60 * 10
+const subplebbitsPubsubIntervalMs = 1000 * 60 // * 10
 
 // fetch subplebbits to monitor every hour
 const multisubs = []
@@ -68,9 +69,6 @@ while (!monitorState.subplebbitsMonitoring) {
   }
 }
 
-// console.log('monitoring', monitorState.subplebbitsMonitoring)
-setInterval(() => console.log(monitorState.subplebbits), 10000)
-
 // fetch subplebbits ipns every 10min
 monitorSubplebbitsIpns().catch(e => console.log(e.message))
 setInterval(() => monitorSubplebbitsIpns().catch(e => console.log(e.message)), subplebbitsIpnsIntervalMs)
@@ -88,11 +86,17 @@ app.get('/', function (req, res) {
     subplebbits.push({
       address: subplebbitAddress,
       lastSubplebbitUpdateTimestamp: monitorState.subplebbits[subplebbitAddress].lastSubplebbitUpdateTimestamp,
-      pubsubDhtPeers: monitorState.subplebbits[subplebbitAddress].pubsubDhtPeers?.length
+      lastSubplebbitPubsubMessageTimetamp: monitorState.subplebbits[subplebbitAddress].lastSubplebbitPubsubMessageTimetamp,
+      pubsubDhtPeers: monitorState.subplebbits[subplebbitAddress].pubsubDhtPeers?.length,
+      pubsubPeers: monitorState.subplebbits[subplebbitAddress].pubsubPeers?.length,
     })
   }
-  const jsonResponse = JSON.stringify({subplebbits})
+  const jsonResponse = JSON.stringify({subplebbits}, null, 2)
   res.setHeader('Content-Type', 'application/json')
   res.send(jsonResponse)
 })
 app.listen(3000)
+
+// debug
+// console.log('monitoring', monitorState.subplebbitsMonitoring)
+// setInterval(() => console.log(monitorState.subplebbits), 10000)
