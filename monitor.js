@@ -1,4 +1,3 @@
-import './lib/use-node-fetch.js'
 import util from 'util'
 // util.inspect.defaultOptions.depth = process.env.DEBUG_DEPTH
 import dotenv from 'dotenv'
@@ -13,8 +12,8 @@ import monitorState from './lib/monitor-state.js'
 import {monitorSubplebbitsIpns} from './lib/subplebbit-ipns.js'
 import {monitorSubplebbitsPubsub} from './lib/subplebbit-pubsub.js'
 
-if (!config.multisubs) {
-  console.log(`missing config.js 'multisubs'`)
+if (!config?.monitoring?.multisubs) {
+  console.log(`missing config.js 'monitoring.multisubs'`)
   process.exit()
 }
 
@@ -25,7 +24,7 @@ const subplebbitsPubsubIntervalMs = 1000 * 60 // * 10
 // fetch subplebbits to monitor every hour
 const multisubs = []
 const getSubplebbitsMonitoring = async () => {
-  const promises = await Promise.allSettled(config.multisubs.map(multisubUrl => fetchMultisubUrl(multisubUrl)))
+  const promises = await Promise.allSettled(config.monitoring.multisubs.map(multisubUrl => fetchMultisubUrl(multisubUrl)))
   for (const [i, {status, value: multisub, reason}] of promises.entries()) {
     if (status === 'fulfilled') {
       multisubs[i] = multisub

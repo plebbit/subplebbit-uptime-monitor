@@ -1,13 +1,21 @@
 export default {
-  // multisub urls to monitor (can support files and ipns names in the future)
-  multisubs: [
-    'https://raw.githubusercontent.com/plebbit/temporary-default-subplebbits/master/multisub.json',
-    './temporary-default-subplebbits-multisub.json'
-  ],
+  monitoring: {
+    // multisub urls or file paths to monitor (will support ipns names in the future)
+    multisubs: [
+      'https://raw.githubusercontent.com/plebbit/temporary-default-subplebbits/master/multisub.json',
+      './temporary-default-subplebbits-multisub.json'
+    ],
+    ipfsGatewayUrls: [
+      'https://ipfsgateway.xyz',
+      'https://ipfs.io',
+      'https://cloudflare-ipfs.com'
+    ]
+  },
   delegatedRoutingUrls: [
     // 'https://example.com',
     'https://delegated-ipfs.dev',
   ],
+  ipfsApiUrl: 'http://pubsub:pubsub@89.36.231.54/api/v0',
   plebbitOptions: {
     // if gateway URL is defined, monitor won't start its own IPFS daemon
     ipfsGatewayUrls: ['http://89.36.231.207'],
@@ -20,33 +28,5 @@ export default {
         urls: ['http://15.235.132.69']
       }
     },
-  },
-  // monitor: {
-  //   interval: 1000 * 60 * 10 // 10 minutes
-  // },
-  // alerts: [
-  //   {
-  //     path: './lib/alerts/telegram',
-  //     options: {
-  //       token: process.env.TELEGRAM_TOKEN,
-  //       chatId: process.env.TELEGRAM_CHAT_ID
-  //     }
-  //   },
-  //   {
-  //     path: './lib/alerts/telegram',
-  //     options: {
-  //       token: process.env.TELEGRAM_TOKEN,
-  //       chatId: process.env.TELEGRAM_CHAT_ID_2
-  //     }
-  //   },
-  // ],
-  // stats: [
-  //   {
-  //     path: './lib/stats/telegram',
-  //     options: {
-  //       token: process.env.TELEGRAM_TOKEN,
-  //       chatId: process.env.TELEGRAM_CHANNEL_ID
-  //     }
-  //   }
-  // ]
+  }
 }
