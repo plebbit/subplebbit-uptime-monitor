@@ -5,7 +5,7 @@ cd ..
 docker rm -f plebbit-uptime-monitor 2>/dev/null
 
 docker run \
-  --detach \
+  --rm \
   --name plebbit-uptime-monitor \
   --restart always \
   --log-opt max-size=10m \
