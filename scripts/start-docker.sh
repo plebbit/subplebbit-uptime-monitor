@@ -12,7 +12,7 @@ docker run \
   --log-opt max-file=5 \
   --volume=$(pwd):/usr/src/plebbit-uptime-monitor \
   --workdir="/usr/src/plebbit-uptime-monitor" \
-  node:16 \
+  node:18 \
   npm install
 
 docker run \
@@ -23,7 +23,7 @@ docker run \
   --log-opt max-file=5 \
   --volume=$(pwd):/usr/src/plebbit-uptime-monitor \
   --workdir="/usr/src/plebbit-uptime-monitor" \
-  node:16 \
+  node:18 \
   npm run monitor
 
 docker logs --follow plebbit-uptime-monitor
