@@ -4,6 +4,7 @@ monitorState.json
 stats-telegram-last-message-id
 .ipfs
 .deploy-env
+.ipfs-deploy-env
 
 # Logs
 logs

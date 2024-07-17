@@ -17,7 +17,7 @@ if [ -z "${DEPLOY_USER+xxx}" ]; then echo "DEPLOY_USER not set" && exit; fi
 if [ -z "${DEPLOY_PASSWORD+xxx}" ]; then echo "DEPLOY_PASSWORD not set" && exit; fi
 
 SCRIPT="
-docker rm -f subplebbit-uptime-monitor 2>/dev/null
+docker rm -f plebbit-uptime-monitor 2>/dev/null
 "
 
 echo "$SCRIPT" | sshpass -p "$DEPLOY_PASSWORD" ssh "$DEPLOY_USER"@"$DEPLOY_HOST"
