@@ -3,7 +3,7 @@
   "type": "module",
   "version": "1.0.0",
   "scripts": {
-    "monitor:default": "node ./monitor"
+    "monitor": "node ./monitor"
   },
   "repository": {
     "type": "git",

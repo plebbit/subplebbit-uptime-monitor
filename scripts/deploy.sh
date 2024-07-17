@@ -18,11 +18,10 @@ if [ -z "${DEPLOY_PASSWORD+xxx}" ]; then echo "DEPLOY_PASSWORD not set" && exit;
 
 SCRIPT="
 cd /home
-git clone https://github.com/plebbit/plebbit-uptime-monitor.git
+git clone https://github.com/plebbit/plebbit-uptime-monitor.git || exit
 cd plebbit-uptime-monitor
 git reset HEAD --hard
 git pull
-npm install
 "
 
 # execute script over ssh
