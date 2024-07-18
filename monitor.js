@@ -11,6 +11,7 @@ import config from './config.js'
 import monitorState from './lib/monitor-state.js'
 import {monitorSubplebbitsIpns} from './lib/subplebbit-ipns.js'
 import {monitorSubplebbitsPubsub} from './lib/subplebbit-pubsub.js'
+import {monitorIpfsGateways} from './lib/ipfs-gateway.js'
 
 if (!config?.monitoring?.multisubs) {
   console.log(`missing config.js 'monitoring.multisubs'`)
@@ -19,7 +20,8 @@ if (!config?.monitoring?.multisubs) {
 
 const multisubsIntervalMs = 1000 * 60 * 60
 const subplebbitsIpnsIntervalMs = 1000 * 60 * 10
-const subplebbitsPubsubIntervalMs = 1000 * 60 // * 10
+const subplebbitsPubsubIntervalMs = 1000 * 60 * 10
+const ipfsGatewaysIntervalMs = 1000 * 60 * 10
 
 // fetch subplebbits to monitor every hour
 const multisubs = []
@@ -76,6 +78,10 @@ setInterval(() => monitorSubplebbitsIpns().catch(e => console.log(e.message)), s
 setTimeout(() => monitorSubplebbitsPubsub().catch(e => console.log(e.message)), 1000 * 60) // wait for some pubsub topics to be fetched
 setInterval(() => monitorSubplebbitsPubsub().catch(e => console.log(e.message)), subplebbitsPubsubIntervalMs)
 
+// fetch gateways every 10min
+monitorIpfsGateways().catch(e => console.log(e.message))
+setInterval(() => monitorIpfsGateways().catch(e => console.log(e.message)), ipfsGatewaysIntervalMs)
+
 // start stats endpoint
 import express from 'express'
 const app = express()
@@ -90,7 +96,14 @@ app.get('/', function (req, res) {
       pubsubPeers: monitorState.subplebbits[subplebbitAddress].pubsubPeers?.length,
     })
   }
-  const jsonResponse = JSON.stringify({subplebbits}, null, 2)
+  const ipfsGateways = []
+  for (const ipfsGatewayUrl in monitorState.ipfsGateways) {
+    ipfsGateways.push({
+      url: ipfsGatewayUrl,
+      ...monitorState.ipfsGateways[ipfsGatewayUrl]?.[monitorState.ipfsGateways[ipfsGatewayUrl].length - 1]
+    })
+  }
+  const jsonResponse = JSON.stringify({subplebbits, ipfsGateways}, null, 2)
   res.setHeader('Content-Type', 'application/json')
   res.send(jsonResponse)
 })
