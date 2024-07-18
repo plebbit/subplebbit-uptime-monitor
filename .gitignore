@@ -5,6 +5,7 @@ stats-telegram-last-message-id
 .ipfs
 .deploy-env
 .ipfs-deploy-env
+bin
 
 # Logs
 logs
