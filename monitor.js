@@ -105,6 +105,8 @@ app.get('/', function (req, res) {
   }
   const jsonResponse = JSON.stringify({subplebbits, ipfsGateways}, null, 2)
   res.setHeader('Content-Type', 'application/json')
+  // cache expires after 1 minutes (60 seconds), must revalidate if expired
+  res.setHeader('Cache-Control', 'public, max-age=60, must-revalidate')
   res.send(jsonResponse)
 })
 app.listen(3000)
