@@ -18,6 +18,7 @@ if [ -z "${DEPLOY_PASSWORD+xxx}" ]; then echo "DEPLOY_PASSWORD not set" && exit;
 
 SCRIPT="
 cd /home
+rm -fr plebbit-uptime-monitor
 git clone https://github.com/plebbit/plebbit-uptime-monitor.git
 cd plebbit-uptime-monitor
 git reset HEAD --hard

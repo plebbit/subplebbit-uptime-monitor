@@ -28,6 +28,9 @@ for FILE_NAME in ${FILE_NAMES[@]}; do
 done
 
 SCRIPT="
+pkill node
+pkill ipfs
+cd /home/plebbit-uptime-monitor
 node start-ipfs
 "
 

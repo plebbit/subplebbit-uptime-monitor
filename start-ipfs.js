@@ -6,7 +6,11 @@ import ps from 'node:process'
 import ProgressBar from 'progress'
 import https from 'https'
 import decompress from 'decompress'
+import http from 'http'
+import httpProxy from 'http-proxy'
 
+const basicAuthUsername = process.env.IPFS_BASIC_AUTH_USERNAME
+const basicAuthPassword = process.env.IPFS_BASIC_AUTH_PASSWORD
 const ipfsGatewayPort = 8080
 const ipfsApiPort = 5001
 const ipfsClientVersion = '0.29.0'
@@ -124,6 +128,18 @@ const startIpfs = async () => {
     hideWindows: true,
   })
 
+  // const Authorizations = `{"Monitor": {"AuthSecret": "basic:monitor:monitor", "AllowedPaths": ["/api/v0"]}}`
+  // const Authorizations = null
+  // await spawnAsync(ipfsPath, ['config', 'API.Authorizations', '--json', Authorizations], {
+  //   env,
+  //   hideWindows: true,
+  // })
+
+  await spawnAsync(ipfsPath, ['config', 'show'], {
+    env,
+    hideWindows: true,
+  })
+
   await new Promise((resolve, reject) => {
     const ipfsProcess = spawn(
       ipfsPath,
@@ -165,5 +181,79 @@ const startIpfs = async () => {
     })
   })
 }
-
 startIpfs()
+
+// start proxy
+const proxy = httpProxy.createProxyServer({})
+
+// rewrite the request
+proxy.on('proxyReq', function(proxyReq, req, res, options) {
+  // remove headers that could potentially cause an ipfs 403 error
+  proxyReq.removeHeader('CF-IPCountry')
+  proxyReq.removeHeader('X-Forwarded-For')
+  proxyReq.removeHeader('CF-RAY')
+  proxyReq.removeHeader('X-Forwarded-Proto')
+  proxyReq.removeHeader('CF-Visitor')
+  proxyReq.removeHeader('sec-ch-ua')
+  proxyReq.removeHeader('sec-ch-ua-mobile')
+  proxyReq.removeHeader('user-agent')
+  proxyReq.removeHeader('origin')
+  proxyReq.removeHeader('sec-fetch-site')
+  proxyReq.removeHeader('sec-fetch-mode')
+  proxyReq.removeHeader('sec-fetch-dest')
+  proxyReq.removeHeader('referer')
+  proxyReq.removeHeader('CF-Connecting-IP')
+  proxyReq.removeHeader('CDN-Loop')
+})
+
+proxy.on('error', (e) => {
+  console.error(e)
+})
+
+// start server
+const startServer = (port) => {
+  const server = http.createServer()
+
+  // never timeout the keep alive connection
+  server.keepAliveTimeout = 0
+
+  server.on('request', async (req, res) => {
+    // unrelated endpoints
+    if (req.url === '/service-worker.js' || req.url === '/manifest.json' || req.url === '/favicon.ico') {
+      res.end()
+      return
+    }
+
+    // start of pubsub related endpoints
+    console.log(req.method, req.url, req.rawHeaders)
+
+    // basic auth allows any api
+    let reqHasBasicAuth = false
+    const reqBasicAuthHeader = (req.headers.authorization || '').split(' ')[1] || ''
+    const [reqBasicAuthUsername, reqBasicAuthPassword] = Buffer.from(reqBasicAuthHeader, 'base64').toString().split(':')
+    if (basicAuthUsername && basicAuthPassword && basicAuthUsername === reqBasicAuthUsername && basicAuthPassword === reqBasicAuthPassword) {
+      reqHasBasicAuth = true
+    }
+
+    // debug api for prometheus metrics https://github.com/ipfs/kubo/blob/master/docs/config.md#internalbitswap 
+    // e.g. http://127.0.0.1:5001/debug/metrics/prometheus
+    if (req.url.startsWith('/debug/')) {
+      // handle basic auth properly to be compatible with prometheus scrape services
+      if ((basicAuthUsername || basicAuthPassword) && !reqHasBasicAuth) {
+        res.setHeader('WWW-Authenticate', 'Basic')
+        res.statusCode = 401
+        res.end()
+        return
+      }
+    }
+
+    // fix error 'has been blocked by CORS policy'
+    res.setHeader('Access-Control-Allow-Origin', '*')
+
+    proxy.web(req, res, {target: `http://127.0.0.1:${ipfsApiPort}`})
+  })
+  server.on('error', console.error)
+  server.listen(port)
+  console.log(`proxy server listening on port ${port}`)
+}
+startServer(11111)
