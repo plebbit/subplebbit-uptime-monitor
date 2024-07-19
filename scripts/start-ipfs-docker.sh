@@ -12,7 +12,7 @@ docker run \
   --log-opt max-file=5 \
   --volume=$(pwd):/usr/src/plebbit-uptime-monitor \
   --workdir="/usr/src/plebbit-uptime-monitor" \
-  --network=host
+  --network=host \
   node:18 \
   sh -c "npm install; node start-ipfs"
 
