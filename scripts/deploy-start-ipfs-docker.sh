@@ -28,10 +28,8 @@ for FILE_NAME in ${FILE_NAMES[@]}; do
 done
 
 SCRIPT="
-pkill node
-pkill ipfs
 cd /home/plebbit-uptime-monitor
-node start-ipfs
+scripts/start-ipfs-docker.sh
 "
 
 echo "$SCRIPT" | sshpass -p "$DEPLOY_PASSWORD" ssh "$DEPLOY_USER"@"$DEPLOY_HOST"
