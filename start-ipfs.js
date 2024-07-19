@@ -128,6 +128,11 @@ const startIpfs = async () => {
     hideWindows: true,
   })
 
+  await spawnAsync(ipfsPath, ['config', '--json', 'Gateway.ExposeRoutingAPI', 'true'], {
+    env,
+    hideWindows: true,
+  })
+
   // const Authorizations = `{"Monitor": {"AuthSecret": "basic:monitor:monitor", "AllowedPaths": ["/api/v0"]}}`
   // const Authorizations = null
   // await spawnAsync(ipfsPath, ['config', 'API.Authorizations', '--json', Authorizations], {

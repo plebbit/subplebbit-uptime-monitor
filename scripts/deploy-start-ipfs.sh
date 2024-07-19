@@ -31,7 +31,7 @@ SCRIPT="
 pkill node
 pkill ipfs
 cd /home/plebbit-uptime-monitor
-node start-ipfs
+nohup node start-ipfs &
 "
 
 echo "$SCRIPT" | sshpass -p "$DEPLOY_PASSWORD" ssh "$DEPLOY_USER"@"$DEPLOY_HOST"
