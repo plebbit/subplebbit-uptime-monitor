@@ -5,6 +5,8 @@ dotenv.config()
 import yargs from 'yargs/yargs'
 import { hideBin } from 'yargs/helpers'
 const argv = yargs(hideBin(process.argv)).argv
+import fs from 'fs-extra'
+import fetch from 'node-fetch'
 
 import {fetchMultisubUrl} from './lib/utils.js'
 import config from './config.js'
@@ -18,6 +20,7 @@ if (!config?.monitoring?.multisubs) {
   process.exit()
 }
 
+const apiPort = 3000
 const multisubsIntervalMs = 1000 * 60 * 60
 const subplebbitsIpnsIntervalMs = 1000 * 60 * 10
 const subplebbitsPubsubIntervalMs = 1000 * 60 * 10
@@ -85,7 +88,7 @@ setInterval(() => monitorIpfsGateways().catch(e => console.log(e.message)), ipfs
 // start stats endpoint
 import express from 'express'
 const app = express()
-app.get('/', function (req, res) {
+app.get('/', (req, res) => {
   const subplebbits = []
   for (const subplebbitAddress in monitorState.subplebbits) {
     subplebbits.push({
@@ -109,7 +112,58 @@ app.get('/', function (req, res) {
   res.setHeader('Cache-Control', 'public, max-age=60, must-revalidate')
   res.send(jsonResponse)
 })
-app.listen(3000)
+app.get('/history', async (req, res) => {
+  // cache expires after 10 minutes (600 seconds), must revalidate if expired
+  res.setHeader('Cache-Control', 'public, max-age=600, must-revalidate')
+  const isFrom = (from, date) => {
+    if (!from) return true
+    try {
+      return from <= new Date(date).getTime()
+    }
+    catch (e) {}
+    return false
+  }
+  const isTo = (to, date) => {
+    if (!to) return true
+    try {
+      return to >= new Date(date).getTime()
+    }
+    catch (e) {}
+    return false
+  }
+  try {
+    const from = new Date(req.query.from).getTime()
+    const to = new Date(req.query.to).getTime()
+    const files = await fs.readdir('history')
+    const history = []
+    for (const file of files) {
+      if (isFrom(from, file) && isTo(to, file)) {
+        try {
+          const stats = JSON.parse(await fs.readFile(`history/${file}`, 'utf8'))
+          history.push([Math.round(new Date().getTime() / 1000), stats])
+        }
+        catch (e) {
+          console.log(e)
+        }
+      }
+    }
+    const jsonResponse = JSON.stringify(history)
+    res.setHeader('Content-Type', 'application/json')
+    res.send(jsonResponse)
+  }
+  catch (e) {
+    console.log(e)
+    res.status(404)
+    res.send(e.message)
+  }
+})
+// save history every 1min
+setInterval(async () => {
+  const history = await fetch(`http://127.0.0.1:${apiPort}`).then(res => res.json())
+  await fs.ensureDir('history')
+  await fs.writeFile(`history/${new Date().toISOString()}`, JSON.stringify(history))
+}, 1000 * 60)
+app.listen(apiPort)
 
 // debug
 // console.log('monitoring', monitorState.subplebbitsMonitoring)
