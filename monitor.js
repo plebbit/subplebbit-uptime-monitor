@@ -88,23 +88,24 @@ setInterval(() => monitorIpfsGateways().catch(e => console.log(e.message)), ipfs
 // start stats endpoint
 import express from 'express'
 const app = express()
+app.listen(apiPort)
 app.get('/', (req, res) => {
-  const subplebbits = []
+  const subplebbits = {}
   for (const subplebbitAddress in monitorState.subplebbits) {
-    subplebbits.push({
+    subplebbits[subplebbitAddress] = {
       address: subplebbitAddress,
       lastSubplebbitUpdateTimestamp: monitorState.subplebbits[subplebbitAddress].lastSubplebbitUpdateTimestamp,
       lastSubplebbitPubsubMessageTimetamp: monitorState.subplebbits[subplebbitAddress].lastSubplebbitPubsubMessageTimetamp,
       pubsubDhtPeers: monitorState.subplebbits[subplebbitAddress].pubsubDhtPeers?.length,
       pubsubPeers: monitorState.subplebbits[subplebbitAddress].pubsubPeers?.length,
-    })
+    }
   }
-  const ipfsGateways = []
+  const ipfsGateways = {}
   for (const ipfsGatewayUrl in monitorState.ipfsGateways) {
-    ipfsGateways.push({
+    ipfsGateways[ipfsGatewayUrl] = {
       url: ipfsGatewayUrl,
       ...monitorState.ipfsGateways[ipfsGatewayUrl]?.[monitorState.ipfsGateways[ipfsGatewayUrl].length - 1]
-    })
+    }
   }
   const jsonResponse = JSON.stringify({subplebbits, ipfsGateways}, null, 2)
   res.setHeader('Content-Type', 'application/json')
@@ -112,42 +113,42 @@ app.get('/', (req, res) => {
   res.setHeader('Cache-Control', 'public, max-age=60, must-revalidate')
   res.send(jsonResponse)
 })
+
+// update history every 5 min
+let history = []
+const updateHistory = async () => {
+  const _history = []
+  await fs.ensureDir('history')
+  const files = await fs.readdir('history')
+  for (const file of files) {
+    try {
+      const stats = JSON.parse(await fs.readFile(`history/${file}`, 'utf8'))
+      _history.push([Math.round(new Date(file).getTime() / 1000), stats])
+    }
+    catch (e) {
+      console.log(e)
+    }
+  }
+  history = _history
+}
+updateHistory().catch(e => console.log(e.message))
+setInterval(() => updateHistory().catch(e => console.log(e.message)), 1000 * 60 * 5)
+
+// history endpoint
 app.get('/history', async (req, res) => {
   // cache expires after 10 minutes (600 seconds), must revalidate if expired
   res.setHeader('Cache-Control', 'public, max-age=600, must-revalidate')
-  const isFrom = (from, date) => {
-    if (!from) return true
-    try {
-      return from <= new Date(date).getTime()
-    }
-    catch (e) {}
-    return false
-  }
-  const isTo = (to, date) => {
-    if (!to) return true
-    try {
-      return to >= new Date(date).getTime()
-    }
-    catch (e) {}
-    return false
-  }
   try {
-    const from = new Date(req.query.from).getTime()
-    const to = new Date(req.query.to).getTime()
-    const files = await fs.readdir('history')
-    const history = []
-    for (const file of files) {
-      if (isFrom(from, file) && isTo(to, file)) {
-        try {
-          const stats = JSON.parse(await fs.readFile(`history/${file}`, 'utf8'))
-          history.push([Math.round(new Date().getTime() / 1000), stats])
-        }
-        catch (e) {
-          console.log(e)
-        }
+    const from = req.query.from ? new Date(req.query.from).getTime() : 0
+    const to = req.query.to ? new Date(req.query.to).getTime() : Infinity
+    const filteredHistory = []
+    for (const stats of history) {
+      const timestamp = stats[0]
+      if (timestamp >= from && timestamp <= to) {
+        filteredHistory.push(stats)
       }
     }
-    const jsonResponse = JSON.stringify(history)
+    const jsonResponse = JSON.stringify(filteredHistory)
     res.setHeader('Content-Type', 'application/json')
     res.send(jsonResponse)
   }
@@ -157,13 +158,13 @@ app.get('/history', async (req, res) => {
     res.send(e.message)
   }
 })
+
 // save history every 1min
 setInterval(async () => {
   const history = await fetch(`http://127.0.0.1:${apiPort}`).then(res => res.json())
   await fs.ensureDir('history')
   await fs.writeFile(`history/${new Date().toISOString()}`, JSON.stringify(history))
 }, 1000 * 60)
-app.listen(apiPort)
 
 // debug
 // console.log('monitoring', monitorState.subplebbitsMonitoring)
