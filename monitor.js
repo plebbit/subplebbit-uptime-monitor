@@ -141,11 +141,22 @@ app.get('/history', async (req, res) => {
   try {
     const from = req.query.from ? new Date(req.query.from).getTime() : 0
     const to = req.query.to ? new Date(req.query.to).getTime() : Infinity
+    const ipfsGatewayUrl = req.query.ipfsGatewayUrl
+    const subplebbitAddress = req.query.subplebbitAddress
     const filteredHistory = []
-    for (const stats of history) {
-      const timestamp = stats[0]
+    for (const [timestamp, stats] of history) {
       if (timestamp >= from && timestamp <= to) {
-        filteredHistory.push(stats)
+        let filteredStats
+        if (ipfsGatewayUrl) {
+          filteredStats = {...filteredStats, ipfsGateways: {[ipfsGatewayUrl]: stats.ipfsGateways[ipfsGatewayUrl]}}
+        }
+        if (subplebbitAddress) {
+          filteredStats = {...filteredStats, subplebbits: {[subplebbitAddress]: stats.subplebbits[subplebbitAddress]}}
+        }
+        if (!filteredStats) {
+          filteredStats = stats
+        }
+        filteredHistory.push([timestamp, filteredStats])
       }
     }
     const jsonResponse = JSON.stringify(filteredHistory)
